@@ -1,1 +1,174 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Em Busca da Cidade Perdida</title>
+    <style>
+        /* Estilização base do Capítulo 4 (Visual de Jogo de Escolhas) */
+        body {
+            background-color: #030611;
+            color: #FDFDFD;
+            font-family: 'Bai Jamjuree', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        main {
+            text-align: center;
+            max-width: 600px;
+            padding: 20px;
+        }
+
+        .caixa-principal {
+            background-color: #0B1121;
+            padding: 2rem;
+            border-radius: 10px;
+            border: 2px solid #1E293B;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.6);
+        }
+
+        .texto-resultado {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+        }
+
+        .caixa-perguntas {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        button {
+            background-color: #1E293B;
+            color: #FDFDFD;
+            border: 1px solid #334155;
+            padding: 12px;
+            font-size: 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background-color: #334155;
+        }
+    </style>
+</head>
+<body>
+
+    <main>
+        <div class="caixa-principal">
+            <!-- Texto dinâmico que muda conforme as escolhas -->
+            <p class="texto-resultado"></p>
+            
+            <!-- Botões de alternativas que o JavaScript vai preencher -->
+            <div class="caixa-perguntas"></div>
+        </div>
+    </main>
+
+    <script>
+        // Seleção dos elementos do DOM para manipulação
+        const caixaPrincipal = document.querySelector(".caixa-principal");
+        const caixaPerguntas = document.querySelector(".caixa-perguntas");
+        const textoResultado = document.querySelector(".texto-resultado");
+
+        // Estrutura de dados das fases da Aventura (Foco em Arrays e Objetos do Curso)
+        const passos = [
+            {
+                id: 0,
+                texto: "Dentro de um baú antigo, você encontra uma carta indicando o caminho para uma cidade perdida. Por onde você deseja começar a sua jornada?",
+                alternativas: [
+                    {
+                        texto: "Seguir pelo mapa em direção às Montanhas Nevadas.",
+                        proximo: 1
+                    },
+                    {
+                        texto: "Entrar na Floresta Sombria seguindo os boatos dos locais.",
+                        proximo: 2
+                    }
+                ]
+            },
+            {
+                id: 1,
+                texto: "Nas Montanhas Nevadas, uma forte nevasca bloqueia a visibilidade. Você avista uma caverna escura à direita e uma ponte de cordas congelada à esquerda.",
+                alternativas: [
+                    {
+                        texto: "Procurar abrigo dentro da caverna.",
+                        proximo: 3
+                    },
+                    {
+                        texto: "Tentar atravessar a ponte congelada com cuidado.",
+                        proximo: 4
+                    }
+                ]
+            },
+            {
+                id: 2,
+                texto: "Na Floresta Sombria, as árvores bloqueiam a luz do sol. Você encontra um rio caudaloso sem ponte, mas avista um barco velho abandonado na margem.",
+                alternativas: [
+                    {
+                        texto: "Tentar consertar e usar o barco velho para atravessar.",
+                        proximo: 5
+                    },
+                    {
+                        texto: "Procurar um caminho alternativo a pé ao longo da margem.",
+                        proximo: 6
+                    }
+                ]
+            },
+            {
+                id: 3,
+                texto: "Fim da Linha! A caverna era o covil de um urso polar gigante. Você teve que recuar e perdeu o rastro da cidade.",
+                alternativas: [{ texto: "Jogar Novamente", proximo: 0 }]
+            },
+            {
+                id: 4,
+                texto: "Vitória Parcial! Você atravessou a ponte com segurança e avistou os portões dourados da Cidade Perdida no horizonte!",
+                alternativas: [{ texto: "Jogar Novamente", proximo: 0 }]
+            },
+            {
+                id: 5,
+                texto: "Fim da Linha! O barco tinha um furo escondido e afundou no meio do rio. Você se salvou, mas seus suprimentos sumiram.",
+                alternativas: [{ texto: "Jogar Novamente", proximo: 0 }]
+            },
+            {
+                id: 6,
+                texto: "Vitória Parcial! Andando pela margem, você descobriu uma passagem secreta de pedras que leva direto aos templos da Cidade Perdida!",
+                alternativas: [{ texto: "Jogar Novamente", proximo: 0 }]
+            }
+        ];
+
+        let passoAtual = 0;
+
+        // Função do Capítulo 4 para renderizar as opções na tela de forma limpa
+        function mostraPasso() {
+            const etapa = passos[passoAtual];
+            textoResultado.textContent = etapa.texto;
+            caixaPerguntas.textContent = ""; // Limpa os botões anteriores
+
+            // Cria um novo botão para cada alternativa disponível na etapa atual
+            etapa.alternativas.forEach(alternativa => {
+                const botaoAlternativa = document.createElement("button");
+                botaoAlternativa.textContent = alternativa.texto;
+                
+                // Evento de clique que atualiza o estado do jogo para o próximo ID
+                botaoAlternativa.addEventListener("click", () => {
+                    passoAtual = alternativa.proximo;
+                    mostraPasso(); // Chama a função novamente para atualizar a tela
+                });
+
+                caixaPerguntas.appendChild(botaoAlternativa);
+            });
+        }
+
+        // Inicia o jogo executando a função pela primeira vez
+        mostraPasso();
+    </script>
+</body>
+</html>
 
