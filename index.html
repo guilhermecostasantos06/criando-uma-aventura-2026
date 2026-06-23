@@ -3,172 +3,198 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Em Busca da Cidade Perdida</title>
+    <title>Minha Aventura 2D</title>
     <style>
-        /* Estilização base do Capítulo 4 (Visual de Jogo de Escolhas) */
         body {
-            background-color: #030611;
-            color: #FDFDFD;
-            font-family: 'Bai Jamjuree', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #0b1121;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            margin: 0;
+            font-family: sans-serif;
+            color: white;
         }
-
-        main {
-            text-align: center;
-            max-width: 600px;
-            padding: 20px;
-        }
-
-        .caixa-principal {
-            background-color: #0B1121;
-            padding: 2rem;
-            border-radius: 10px;
-            border: 2px solid #1E293B;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.6);
-        }
-
-        .texto-resultado {
-            font-size: 1.2rem;
-            line-height: 1.6;
-            margin-bottom: 2rem;
-        }
-
-        .caixa-perguntas {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        button {
-            background-color: #1E293B;
-            color: #FDFDFD;
-            border: 1px solid #334155;
-            padding: 12px;
-            font-size: 1rem;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-
-        button:hover {
-            background-color: #334155;
+        h1 { margin-bottom: 5px; font-size: 24px; }
+        p { margin-top: 0; color: #aaa; }
+        canvas {
+            background-color: #22d3ee; /* Cor do céu */
+            border: 4px solid #1e293b;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
         }
     </style>
 </head>
 <body>
 
-    <main>
-        <div class="caixa-principal">
-            <!-- Texto dinâmico que muda conforme as escolhas -->
-            <p class="texto-resultado"></p>
-            
-            <!-- Botões de alternativas que o JavaScript vai preencher -->
-            <div class="caixa-perguntas"></div>
-        </div>
-    </main>
+    <h1>Aventura 2D: O Início</h1>
+    <p>Use as setas <b>Esquerda / Direita</b> para andar e <b>Seta para Cima</b> para pular.</p>
+    <canvas id="gameCanvas" width="800" height="500"></canvas>
 
     <script>
-        // Seleção dos elementos do DOM para manipulação
-        const caixaPrincipal = document.querySelector(".caixa-principal");
-        const caixaPerguntas = document.querySelector(".caixa-perguntas");
-        const textoResultado = document.querySelector(".texto-resultado");
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
 
-        // Estrutura de dados das fases da Aventura (Foco em Arrays e Objetos do Curso)
-        const passos = [
-            {
-                id: 0,
-                texto: "Dentro de um baú antigo, você encontra uma carta indicando o caminho para uma cidade perdida. Por onde você deseja começar a sua jornada?",
-                alternativas: [
-                    {
-                        texto: "Seguir pelo mapa em direção às Montanhas Nevadas.",
-                        proximo: 1
-                    },
-                    {
-                        texto: "Entrar na Floresta Sombria seguindo os boatos dos locais.",
-                        proximo: 2
-                    }
-                ]
-            },
-            {
-                id: 1,
-                texto: "Nas Montanhas Nevadas, uma forte nevasca bloqueia a visibilidade. Você avista uma caverna escura à direita e uma ponte de cordas congelada à esquerda.",
-                alternativas: [
-                    {
-                        texto: "Procurar abrigo dentro da caverna.",
-                        proximo: 3
-                    },
-                    {
-                        texto: "Tentar atravessar a ponte congelada com cuidado.",
-                        proximo: 4
-                    }
-                ]
-            },
-            {
-                id: 2,
-                texto: "Na Floresta Sombria, as árvores bloqueiam a luz do sol. Você encontra um rio caudaloso sem ponte, mas avista um barco velho abandonado na margem.",
-                alternativas: [
-                    {
-                        texto: "Tentar consertar e usar o barco velho para atravessar.",
-                        proximo: 5
-                    },
-                    {
-                        texto: "Procurar um caminho alternativo a pé ao longo da margem.",
-                        proximo: 6
-                    }
-                ]
-            },
-            {
-                id: 3,
-                texto: "Fim da Linha! A caverna era o covil de um urso polar gigante. Você teve que recuar e perdeu o rastro da cidade.",
-                alternativas: [{ texto: "Jogar Novamente", proximo: 0 }]
-            },
-            {
-                id: 4,
-                texto: "Vitória Parcial! Você atravessou a ponte com segurança e avistou os portões dourados da Cidade Perdida no horizonte!",
-                alternativas: [{ texto: "Jogar Novamente", proximo: 0 }]
-            },
-            {
-                id: 5,
-                texto: "Fim da Linha! O barco tinha um furo escondido e afundou no meio do rio. Você se salvou, mas seus suprimentos sumiram.",
-                alternativas: [{ texto: "Jogar Novamente", proximo: 0 }]
-            },
-            {
-                id: 6,
-                texto: "Vitória Parcial! Andando pela margem, você descobriu uma passagem secreta de pedras que leva direto aos templos da Cidade Perdida!",
-                alternativas: [{ texto: "Jogar Novamente", proximo: 0 }]
-            }
+        // 1. Configurações do Jogo e Física
+        const gravidade = 0.6;
+        const friccao = 0.8;
+        let pontuacao = 0;
+
+        // 2. Controle de Teclas
+        const teclas = { esquerda: false, direita: false, cima: false };
+
+        // 3. Objeto do Personagem
+        const jogador = {
+            x: 100,
+            y: 300,
+            largura: 30,
+            altura: 40,
+            v_x: 0, // Velocidade X
+            v_y: 0, // Velocidade Y
+            velocidade: 5,
+            forcaPulo: 12,
+            noChao: false,
+            cor: "#2563eb" // Azul
+        };
+
+        // 4. Objetos do Cenário (Plataformas fixas)
+        const plataformas = [
+            { x: 0, y: 460, largura: 800, altura: 40 },   // Chão principal
+            { x: 200, y: 350, largura: 150, altura: 20 }, // Plataforma 1
+            { x: 450, y: 270, largura: 200, altura: 20 }, // Plataforma 2
+            { x: 150, y: 180, largura: 180, altura: 20 }  // Plataforma 3
         ];
 
-        let passoAtual = 0;
+        // 5. Objetos de Interação (Itens coletáveis)
+        let moedas = [
+            { x: 260, y: 310, raio: 8, coletada: false },
+            { x: 550, y: 230, raio: 8, coletada: false },
+            { x: 230, y: 140, raio: 8, coletada: false }
+        ];
 
-        // Função do Capítulo 4 para renderizar as opções na tela de forma limpa
-        function mostraPasso() {
-            const etapa = passos[passoAtual];
-            textoResultado.textContent = etapa.texto;
-            caixaPerguntas.textContent = ""; // Limpa os botões anteriores
+        // 6. Ouvintes de Teclado
+        window.addEventListener("keydown", (e) => {
+            if (e.key === "ArrowLeft" || e.key === "a") teclas.esquerda = true;
+            if (e.key === "ArrowRight" || e.key === "d") teclas.direita = true;
+            if (e.key === "ArrowUp" || e.key === "w" || e.key === " ") teclas.cima = true;
+        });
 
-            // Cria um novo botão para cada alternativa disponível na etapa atual
-            etapa.alternativas.forEach(alternativa => {
-                const botaoAlternativa = document.createElement("button");
-                botaoAlternativa.textContent = alternativa.texto;
+        window.addEventListener("keyup", (e) => {
+            if (e.key === "ArrowLeft" || e.key === "a") teclas.esquerda = false;
+            if (e.key === "ArrowRight" || e.key === "d") teclas.direita = false;
+            if (e.key === "ArrowUp" || e.key === "w" || e.key === " ") teclas.cima = false;
+        });
+
+        // 7. Função de Detecção de Colisão AABB (caixas delimitadoras)
+        function verificarColisao(obj1, obj2) {
+            return obj1.x < obj2.x + obj2.largura &&
+                   obj1.x + obj1.largura > obj2.x &&
+                   obj1.y < obj2.y + obj2.altura &&
+                   obj1.y + obj1.altura > obj2.y;
+        }
+
+        // 8. Atualização da Física e Movimentos
+        function atualizar() {
+            // Movimento lateral
+            if (teclas.esquerda) {
+                if (jogador.v_x > -jogador.velocidade) jogador.v_x--;
+            }
+            if (teclas.direita) {
+                if (jogador.v_x < jogador.velocidade) jogador.v_x++;
+            }
+
+            // Aplica fricção para o personagem deslizar um pouco ao parar
+            jogador.v_x *= friccao;
+            
+            // Aplica gravidade constante puxando o jogador para baixo
+            jogador.v_y += gravidade;
+
+            // Pulo (só permite se estiver tocando o chão ou uma plataforma)
+            if (teclas.cima && jogador.noChao) {
+                jogador.v_y = -jogador.forcaPulo;
+                jogador.noChao = false;
+            }
+
+            // Atualiza a posição baseada nas velocidades calculadas
+            jogador.x += jogador.v_x;
+            jogador.y += jogador.v_y;
+
+            // Restringe o jogador dentro das bordas laterais da tela
+            if (jogador.x < 0) jogador.x = 0;
+            if (jogador.x > canvas.width - jogador.largura) jogador.x = canvas.width - jogador.largura;
+
+            // Sistema de Colisão com as Plataformas
+            jogador.noChao = false; 
+            for (let i = 0; i < plataformas.length; i++) {
+                let plat = plataformas[i];
                 
-                // Evento de clique que atualiza o estado do jogo para o próximo ID
-                botaoAlternativa.addEventListener("click", () => {
-                    passoAtual = alternativa.proximo;
-                    mostraPasso(); // Chama a função novamente para atualizar a tela
-                });
+                if (verificarColisao(jogador, plat)) {
+                    // Se o jogador estiver caindo e colidir com o topo da plataforma
+                    if (jogador.v_y > 0 && (jogador.y + jogador.altura - jogador.v_y) <= plat.y) {
+                        jogador.y = plat.y - jogador.altura;
+                        jogador.v_y = 0;
+                        jogador.noChao = true;
+                    }
+                }
+            }
 
-                caixaPerguntas.appendChild(botaoAlternativa);
+            // Sistema de Interação: Coleta de Moedas
+            moedas.forEach(moeda => {
+                if (!moeda.coletada) {
+                    // Colisão simples baseada em distância do centro
+                    let centroX = jogador.x + jogador.largura / 2;
+                    let centroY = jogador.y + jogador.altura / 2;
+                    let dist = Math.hypot(centroX - moeda.x, centroY - moeda.y);
+                    
+                    if (dist < moeda.raio + jogador.largura / 2) {
+                        moeda.coletada = true;
+                        pontuacao += 10;
+                    }
+                }
             });
         }
 
-        // Inicia o jogo executando a função pela primeira vez
-        mostraPasso();
+        // 9. Renderização dos Gráficos na Tela
+        function desenhar() {
+            // Limpa a tela desenhando o céu azul
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Desenha as plataformas e o chão
+            ctx.fillStyle = "#475569"; // Cinza ardósia
+            plataformas.forEach(plat => {
+                ctx.fillRect(plat.x, plat.y, plat.width || plat.largura, plat.height || plat.altura);
+            });
+
+            // Desenha as moedas ativas (Interação)
+            moedas.forEach(moeda => {
+                if (!moeda.coletada) {
+                    ctx.fillStyle = "#eab308"; // Amarelo ouro
+                    ctx.beginPath();
+                    ctx.arc(moeda.x, moeda.y, moeda.raio, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            });
+
+            // Desenha o Personagem
+            ctx.fillStyle = jogador.cor;
+            ctx.fillRect(jogador.x, jogador.y, jogador.largura, jogador.altura);
+
+            // Interface do Usuário (Placar de Pontos)
+            ctx.fillStyle = "#ffffff";
+            ctx.font = "20px Arial";
+            ctx.fillText(`Moedas: ${pontuacao}`, 20, 40);
+        }
+
+        // 10. Loop Principal do Jogo (Roda a 60 quadros por segundo)
+        function gameLoop() {
+            atualizar();
+            desenhar();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Inicia o loop do jogo
+        gameLoop();
     </script>
 </body>
 </html>
-
